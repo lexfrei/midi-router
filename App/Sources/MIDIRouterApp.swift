@@ -140,7 +140,7 @@ struct RouterSettings: View {
                 "Closing the window keeps routing active. Quit MIDI Router to stop routing and release its notes."
             )
             Text(
-                "MIDI 1.0 compatibility. MIDI 2.0 devices are converted by CoreMIDI. No accounts, activation or network service required."
+                "MIDI 1.0 and native MIDI 2.0 routing. Legacy destinations may require conversion. No accounts, activation or network service required."
             ).foregroundStyle(RouterStyle.secondaryText)
         }
         .padding(24)
