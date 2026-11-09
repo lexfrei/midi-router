@@ -209,11 +209,13 @@ final class MultipartRoutingTests: XCTestCase {
                 active[id] = nil
                 continue
             }
-            let raw =
-                [message.data2]
-                + message.words.dropFirst().flatMap { word in
-                    (0..<4).map { UInt8((word >> (24 - $0 * 8)) & 255) }
-                }
+            var raw: [UInt8] = [message.data2]
+            for word in message.words.dropFirst() {
+                raw.append(contentsOf: [
+                    UInt8(truncatingIfNeeded: word >> 24), UInt8(truncatingIfNeeded: word >> 16),
+                    UInt8(truncatingIfNeeded: word >> 8), UInt8(truncatingIfNeeded: word),
+                ])
+            }
             let bytes = Array(raw.prefix(Int(message.status & 15) - 1))
             if form == 0 { messages.append(bytes) }
             if form == 1 { active[id] = bytes }

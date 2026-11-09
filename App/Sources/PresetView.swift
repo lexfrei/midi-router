@@ -76,7 +76,7 @@ struct DevicesView: View {
                 Toggle("Show Offline Devices", isOn: $state.showOfflineDevices).toggleStyle(.button)
                     .help("Keep offline devices visible beyond the 30-second grace period")
                 Button("Bluetooth MIDI…", action: state.openBluetooth)
-                Toggle("Demo Mode", isOn: Binding(get: { state.isDemo }, set: state.setDemo)).toggleStyle(
+                Toggle("Demo Mode", isOn: Binding(get: { state.isDemo }, set: { state.setDemo($0) })).toggleStyle(
                     .button)
             }.padding(16)
             List {
