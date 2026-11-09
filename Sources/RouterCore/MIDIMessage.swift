@@ -60,9 +60,7 @@ public struct MIDIMessage: Equatable, Sendable {
             let count = Int((first >> 16) & 15)
             if form > 3 { break }
             guard count <= 6 else { return nil }
-            let bytes =
-                [UInt8((first >> 8) & 255), UInt8(first & 255)]
-                + (0..<4).map { UInt8((words[1] >> (24 - $0 * 8)) & 255) }
+            let bytes = Self.sysEx7Payload(words)
             guard bytes.prefix(count).allSatisfy({ $0 < 128 }) else { return nil }
         case 5:
             let form = (first >> 20) & 15
@@ -100,10 +98,16 @@ public struct MIDIMessage: Equatable, Sendable {
         precondition((1...16).contains(channel) && note < 128)
         return MIDIMessage(bytes: [0x80 | UInt8(channel - 1), note, 0])!
     }
+    private static func sysEx7Payload(_ words: [UInt32]) -> [UInt8] {
+        [
+            UInt8(truncatingIfNeeded: words[0] >> 8), UInt8(truncatingIfNeeded: words[0]),
+            UInt8(truncatingIfNeeded: words[1] >> 24), UInt8(truncatingIfNeeded: words[1] >> 16),
+            UInt8(truncatingIfNeeded: words[1] >> 8), UInt8(truncatingIfNeeded: words[1]),
+        ]
+    }
     public var bytes: [UInt8] {
         if type == 3 && status >> 4 <= 3 {
-            let payload = [data1, data2] + (0..<4).map { UInt8((words[1] >> (24 - $0 * 8)) & 255) }
-            return Array(payload.prefix(Int((words[0] >> 16) & 15)))
+            return Array(Self.sysEx7Payload(words).prefix(Int((words[0] >> 16) & 15)))
         }
         let count: Int
         switch (type, status) {

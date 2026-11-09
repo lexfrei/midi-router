@@ -116,6 +116,15 @@ final class UMPReceiverTests: XCTestCase {
         }
     }
 
+    func testSysEx7PayloadOrderAcrossBothWordsForEveryLength() throws {
+        let expected: [UInt8] = [1, 2, 3, 4, 5, 6]
+        for count in 0...6 {
+            let header = UInt32(0x3000_0102) | UInt32(count) << 16
+            let message = try XCTUnwrap(MIDIMessage(words: [header, 0x0304_0506]))
+            XCTAssertEqual(message.bytes, Array(expected.prefix(count)))
+        }
+    }
+
     func testSysEx7UnusedReservedBytesAreIgnoredButPayloadIsSevenBit() throws {
         let words: [UInt32] = [0x3501_7DFF, 0xFFFF_FFFF]
         let message = try XCTUnwrap(MIDIMessage(words: words))
