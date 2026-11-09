@@ -97,7 +97,7 @@ struct RouterCommands: Commands {
                 ".", modifiers: [.command, .shift])
             Button("Resume Suspended Inputs", action: state.resume)
             Button("Bluetooth MIDI…", action: state.openBluetooth)
-            Toggle("Demo Mode", isOn: Binding(get: { state.isDemo }, set: state.setDemo))
+            Toggle("Demo Mode", isOn: Binding(get: { state.isDemo }, set: { state.setDemo($0) }))
         }
         CommandMenu("Presets") {
             Button("Save Current Setup…") { state.beginNewPreset() }
