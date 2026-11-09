@@ -1,0 +1,67 @@
+name: MIDIRouter
+options:
+  deploymentTarget:
+    macOS: "14.0"
+packages:
+  MIDIRouter:
+    path: .
+  ASCIIUI:
+    url: https://github.com/lexfrei/ascii-ui.git
+    exactVersion: 0.1.0-rc.1
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_TREAT_WARNINGS_AS_ERRORS: YES
+    MACOSX_DEPLOYMENT_TARGET: "14.0"
+    MARKETING_VERSION: "0.2.1"
+    CURRENT_PROJECT_VERSION: "1"
+    CODE_SIGN_IDENTITY: "-"
+    CODE_SIGN_STYLE: Manual
+    ENABLE_HARDENED_RUNTIME: YES
+targets:
+  MIDIRouter:
+    type: application
+    platform: macOS
+    sources:
+      - App/Sources
+      - path: LICENSE
+        buildPhase: resources
+    settings:
+      base:
+        PRODUCT_NAME: MIDI Router
+        PRODUCT_MODULE_NAME: MIDIRouterApp
+        PRODUCT_BUNDLE_IDENTIFIER: la.lex.midi-router
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.music
+        INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription: MIDI Router uses the system Bluetooth MIDI window to connect devices you choose.
+        INFOPLIST_KEY_NSPrincipalClass: NSApplication
+    dependencies:
+      - package: MIDIRouter
+        product: RouterCore
+      - package: MIDIRouter
+        product: RouterMIDI
+      - package: ASCIIUI
+        product: ASCIIUI
+  MIDIRouterUITests:
+    type: bundle.ui-testing
+    platform: macOS
+    sources:
+      - App/UITests
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: la.lex.midi-router.uitests
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_TARGET_NAME: MIDIRouter
+        # Ad-hoc XCTest runners need to load a test bundle without a Team ID.
+        ENABLE_HARDENED_RUNTIME: NO
+    dependencies:
+      - target: MIDIRouter
+schemes:
+  MIDIRouter:
+    build:
+      targets:
+        MIDIRouter: all
+        MIDIRouterUITests: [test]
+    test:
+      targets:
+        - MIDIRouterUITests

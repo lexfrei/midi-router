@@ -1,0 +1,15 @@
+{
+  "originHash" : "f7d6489abad1962add9d7184c313d0ab8306fec0bb568cc328aac75e9e0ec83d",
+  "pins" : [
+    {
+      "identity" : "ascii-ui",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/lexfrei/ascii-ui.git",
+      "state" : {
+        "revision" : "85c5eef4e8bcb539892329842f6f8ef00c168851",
+        "version" : "0.1.0-rc.1"
+      }
+    }
+  ],
+  "version" : 3
+}
