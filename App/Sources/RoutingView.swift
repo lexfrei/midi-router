@@ -312,8 +312,10 @@ struct Patchbay: View {
                     alignment: .topLeading
                 )
                 .popupAnchor("patchbay-content")
+                .focusEffectDisabled(false)
             }
             .focusable(interactions: .edit)
+            .focusEffectDisabled()
             .focused($canvasFocused)
             .onDeleteCommand(perform: state.deleteSelectedRoute)
             .accessibilityLabel("MIDI Patchbay")

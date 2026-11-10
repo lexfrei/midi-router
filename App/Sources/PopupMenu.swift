@@ -118,6 +118,8 @@ struct PopupMenuLayer: View {
             menu: menu, bounds: bounds,
             metrics: PopupMetrics(minimumTargetHeight: 28, bodyFontSize: 13, textScale: state.session.textScale),
             activate: { state.activatePopup(index: $0) }, highlight: state.highlightPopup,
-            move: state.movePopup, search: { state.searchPopup($0) }, dismiss: state.dismissPopup)
+            move: state.movePopup, search: { state.searchPopup($0) }, dismiss: state.dismissPopup
+        )
+        .focusEffectDisabled()
     }
 }

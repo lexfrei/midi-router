@@ -1,3 +1,4 @@
+import AppKit
 import ApplicationServices
 import XCTest
 
@@ -147,6 +148,68 @@ final class RoutingUITests: XCTestCase {
         window.typeKey(.return, modifierFlags: [])
         XCTAssertEqual(app.buttons["route-channel"].value as? String, "Channel 1")
         app.terminate()
+    }
+
+    @MainActor
+    func testMenuAndPatchbayOmitPerimeterFocusRings() throws {
+        guard requireEventPermission() else { return }
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing", "--demo"]
+        app.launch()
+        defer { app.terminate() }
+        let source = app.buttons["connector-demo:input-main"]
+        let destination = app.buttons["connector-demo:output-main"]
+        XCTAssertTrue(source.waitForExistence(timeout: 10))
+        let window = app.windows["main"]
+        app.buttons["room-picker"].click()
+        let popup = app.descendants(matching: .any).matching(identifier: "popup-menu").firstMatch
+        XCTAssertTrue(popup.waitForExistence(timeout: 5))
+        XCTAssertFalse(try hasFocusRingAbove(popup.frame, in: window))
+        window.typeKey(.downArrow, modifierFlags: [])
+        window.typeKey(.return, modifierFlags: [])
+        XCTAssertEqual(app.buttons["room-picker"].value as? String, "Terminal")
+        app.buttons["room-picker"].click()
+        window.typeKey(.upArrow, modifierFlags: [])
+        window.typeKey(.return, modifierFlags: [])
+        XCTAssertEqual(app.buttons["room-picker"].value as? String, "Studio")
+        let point = CGVector(
+            dx: source.frame.maxX + (destination.frame.minX - source.frame.maxX) * 0.25 - window.frame.minX,
+            dy: source.frame.midY - window.frame.minY)
+        window.coordinate(withNormalizedOffset: .zero).withOffset(point).click()
+        XCTAssertTrue(app.buttons["inspector-close"].waitForExistence(timeout: 5))
+        let patchbay = app.scrollViews["MIDI Patchbay"]
+        XCTAssertTrue(patchbay.exists)
+        XCTAssertFalse(try hasFocusRingAbove(patchbay.frame, in: window))
+        window.typeKey(.delete, modifierFlags: [])
+        XCTAssertEqual(app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "route-label-")).count, 0)
+    }
+
+    @MainActor
+    private func hasFocusRingAbove(_ frame: CGRect, in window: XCUIElement) throws -> Bool {
+        let bitmap = try XCTUnwrap(NSBitmapImageRep(data: window.screenshot().pngRepresentation))
+        let focus = try XCTUnwrap(NSColor.keyboardFocusIndicatorColor.usingColorSpace(.sRGB))
+        let scale = CGFloat(bitmap.pixelsWide) / window.frame.width
+        let left = frame.minX - window.frame.minX + 8
+        let width = frame.width - 16
+        let top = frame.minY - window.frame.minY
+        XCTAssertGreaterThan(width, 0)
+        for offset in -6...6 {
+            let y = Int((top + CGFloat(offset)) * scale)
+            guard (0..<bitmap.pixelsHigh).contains(y) else { continue }
+            var matches = 0
+            for sample in 0..<100 {
+                let x = Int((left + width * CGFloat(sample) / 100) * scale)
+                guard (0..<bitmap.pixelsWide).contains(x),
+                    let color = bitmap.colorAt(x: x, y: y)?.usingColorSpace(.sRGB)
+                else { continue }
+                let hue = abs(color.hueComponent - focus.hueComponent)
+                if min(hue, 1 - hue) < 0.06 && color.saturationComponent > 0.2 {
+                    matches += 1
+                }
+            }
+            if matches > 80 { return true }
+        }
+        return false
     }
 
     private func requireEventPermission(file: StaticString = #filePath, line: UInt = #line) -> Bool {
