@@ -24,6 +24,20 @@ final class NavigationRenderingTests: XCTestCase {
         }
     }
 
+    func testMonitorHasNoPrimaryTabAndKeepsNavigationAvailable() throws {
+        let state = AppState(initial: Session(), startEngine: false, persist: false)
+        let host = NSHostingView(rootView: ContentView(state: state))
+        let window = makeWindow(host: host, width: 1100)
+        defer { window.close() }
+        settle(host)
+        let primary = try tabFrames(in: host)
+        XCTAssertEqual(primary.count, 3)
+        state.page = .monitor
+        settle(host)
+        XCTAssertEqual(try tabFrames(in: host), primary)
+        XCTAssertFalse(window.isVisible)
+    }
+
     func testRoutingControlsBelongToWindowContent() throws {
         for (scale, width) in [(1.0, 640.0), (2.0, 880.0)] {
             let state = AppState(initial: Session(textScale: scale), startEngine: false, persist: false)
@@ -71,11 +85,11 @@ final class NavigationRenderingTests: XCTestCase {
         }
         var room = try open("room-picker")
         XCTAssertEqual(room.items.compactMap { $0 }.filter(\.selected).map(\.title), ["Studio"])
-        state.activatePopup(index: try XCTUnwrap(room.items.firstIndex { $0?.title == "Terminal" }))
+        state.activatePopup(index: try XCTUnwrap(room.items.firstIndex { $0?.title == "Route List" }))
         XCTAssertEqual(state.session.room, .terminal)
         settle(host)
         room = try open("room-picker")
-        XCTAssertEqual(room.items.compactMap { $0 }.filter(\.selected).map(\.title), ["Terminal"])
+        XCTAssertEqual(room.items.compactMap { $0 }.filter(\.selected).map(\.title), ["Route List"])
         state.dismissPopup()
         settle(host)
         var presets = try open("preset-picker")
@@ -113,8 +127,8 @@ final class NavigationRenderingTests: XCTestCase {
     private func tabFrames(in host: NSView) throws -> [CGRect] {
         let frames = buttons(in: host).filter { !($0 is NSPopUpButton) }
             .map { $0.convert($0.bounds, to: host) }
-        let rows = Dictionary(grouping: frames, by: \.midY).values.filter { $0.count == AppState.Page.allCases.count }
-        let row = rows.max { ($0.first?.minY ?? 0) < ($1.first?.minY ?? 0) }
+        let rows = Dictionary(grouping: frames, by: \.midY).values.filter { $0.count == 3 }
+        let row = rows.min { ($0.first?.minY ?? 0) < ($1.first?.minY ?? 0) }
         return try XCTUnwrap(row).sorted { $0.minX < $1.minX }
     }
 

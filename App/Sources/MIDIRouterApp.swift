@@ -70,14 +70,19 @@ struct RouterCommands: Commands {
             ).disabled(!state.canRedo)
         }
         CommandGroup(after: .toolbar) {
-            ForEach(Array(AppState.Page.allCases.enumerated()), id: \.element) { index, page in
+            ForEach(Array(AppState.Page.primary.enumerated()), id: \.element) { index, page in
                 Button(page.rawValue) { state.page = page }.keyboardShortcut(
                     KeyEquivalent(Character(String(index + 1))))
+            }
+            Button("MIDI Monitor") { state.page = .monitor }
+            if state.page == .monitor {
+                Toggle("Pause Monitor Display", isOn: $state.monitorPaused)
+                Button("Clear Monitor Display", action: state.clearMonitor)
             }
             Divider()
             Menu("Room") {
                 ForEach(Room.allCases, id: \.self) { room in
-                    Button(room.rawValue.capitalized) { state.changeRoom(room) }
+                    Button(room.displayName) { state.changeRoom(room) }
                 }
             }
             Button("Increase Text Size") { state.changeTextSize(0.1) }.keyboardShortcut("+")
@@ -104,10 +109,6 @@ struct RouterCommands: Commands {
             ForEach(state.session.presets) { preset in
                 Button(preset.name) { state.recallPreset(preset.id) }
             }
-        }
-        CommandMenu("Monitor") {
-            Toggle("Pause Display", isOn: $state.monitorPaused)
-            Button("Clear Display", action: state.clearMonitor)
         }
         CommandGroup(replacing: .help) {
             Button("MIDI Router Help") {

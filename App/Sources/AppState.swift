@@ -13,6 +13,8 @@ final class AppState: ObservableObject {
         case monitor = "Monitor"
         case presets = "Presets"
         case devices = "Devices"
+
+        static let primary: [Page] = [.routes, .presets, .devices]
     }
     enum Inspector: Hashable {
         case route(UUID)

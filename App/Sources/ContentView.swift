@@ -97,7 +97,7 @@ struct ContentView: View {
             .foregroundStyle(RouterStyle.secondaryText).fixedSize()
     }
     private var tabs: some View {
-        ForEach(AppState.Page.allCases, id: \.self) { page in
+        ForEach(AppState.Page.primary, id: \.self) { page in
             ASCIITab(page.rawValue, selected: state.page == page) {
                 state.page = page
             }
@@ -131,9 +131,9 @@ struct ContentView: View {
     }
     @ViewBuilder private var setupControls: some View {
         PopupMenu(
-            title: state.session.room.rawValue.capitalized, label: "Room", identifier: "room-picker", state: state,
+            title: state.session.room.displayName, label: "Room", identifier: "room-picker", state: state,
             items: Room.allCases.map { room in
-                PopupItem(title: room.rawValue.capitalized, selected: room == state.session.room) {
+                PopupItem(title: room.displayName, selected: room == state.session.room) {
                     state.changeRoom(room)
                 }
             })

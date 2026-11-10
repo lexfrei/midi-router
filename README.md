@@ -33,7 +33,7 @@ Your session returns when you reopen the app. Unplugged devices leave the worksp
 
 ## See what is connected
 
-Choose the view that fits the setup. Studio shows inputs, outputs and cables in a patchbay. Terminal provides a compact route list. Desktop lets you arrange device panels yourself, while Glass uses a patchbay with floating controls.
+Choose the view that fits the setup. Studio shows inputs, outputs and cables in a patchbay. Route List provides a compact route list. Desktop lets you arrange device panels yourself, while Glass uses a patchbay with floating controls.
 
 All views use the same routes. The interface follows macOS light and dark appearance, with adjustable text size and restrained monospaced controls. Input indicators show when MIDI reaches the Mac, even before you create a route.
 
@@ -42,7 +42,7 @@ Demo Mode lets you explore routing with simulated devices, without connecting an
 <details>
 <summary>Inspect messages with the MIDI monitor</summary>
 
-The monitor is a diagnostic view for notes, controllers, channels and routed messages. It starts paused. Turn off **Pause Display** when you need to inspect traffic, then filter or copy the log. Pausing the display never stops routing.
+Open **View > MIDI Monitor** to inspect notes, controllers, channels and routed messages. The monitor starts paused. Turn off **Pause Display** when you need to inspect traffic, then filter or copy the log. Pausing the display never stops routing.
 
 ![MIDI monitor showing incoming clock messages, groups and complete packet data](docs/images/monitor.png)
 

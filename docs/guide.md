@@ -6,7 +6,7 @@ Connect your MIDI devices to the Mac and open MIDI Router. Drag an input connect
 
 Connect one input to several outputs to layer instruments. Connect several inputs to one output to combine controllers. MIDI Router does not synthesize or route audio; choose the receiving instrument's audio output separately.
 
-Click a cable, its label or a row in Terminal to open its settings. **AUTO** preserves the incoming MIDI channel. Selecting a channel sends channel messages on that channel. **Transpose** shifts notes by semitones. Notes outside the supported pitch range are not sent.
+Click a cable, its label or a row in Route List to open its settings. **AUTO** preserves the incoming MIDI channel. Selecting a channel sends channel messages on that channel. **Transpose** shifts notes by semitones. Notes outside the supported pitch range are not sent.
 
 Settings appear beside the selected connection without resizing or scrolling the workspace. Choices apply immediately; text changes apply when editing finishes. New routes require **Create**. Undo restores the previous settings.
 
@@ -40,7 +40,7 @@ Use **Devices** to rename, reorder, hide or rebind ports. Names and layout chang
 
 Saved devices that are absent at launch stay hidden. A device that disconnects while the app is running remains visible for 30 seconds, then disappears without losing its configuration. Enable **Show Offline Devices** to inspect or rebind it. Reconnection restores its visibility.
 
-Studio, Terminal, Desktop and Glass show the same routes. Desktop lets you move device panels. Terminal provides a list alternative to the patchbay. The **View** menu adjusts text size; appearance follows macOS.
+Studio, Route List, Desktop and Glass show the same routes. Desktop lets you move device panels. Route List provides a list alternative to the patchbay. The **View** menu adjusts text size; appearance follows macOS.
 
 Dropdown menus support arrow navigation, Return, typeahead, Escape and outside-click dismissal. The macOS menu bar, file dialogs and Bluetooth window remain native system interfaces.
 
@@ -48,7 +48,7 @@ Dropdown menus support arrow navigation, Return, typeahead, Escape and outside-c
 
 A source displays **Receiving** when MIDI reaches the Mac, even if no route exists. This does not confirm that a destination is producing sound.
 
-**Monitor** shows received and routed messages, source and destination, group, channel, timestamp and message data. MIDI 2.0 messages include their full Universal MIDI Packet words. Transfer warnings appear separately from engine faults and are included when copying the log.
+Open **View > MIDI Monitor** for received and routed messages, source and destination, group, channel, timestamp and message data. MIDI 2.0 messages include their full Universal MIDI Packet words. Transfer warnings appear separately from engine faults and are included when copying the log.
 
 The monitor starts paused and does not accumulate event history until you turn off **Pause Display**. Pause, Clear and search affect only the display. The monitor keeps a bounded history without dropping routed events. If the input queue overflows, the affected input is suspended and its owned notes are released. **Resume Suspended Inputs** is available in the Routing menu.
 
