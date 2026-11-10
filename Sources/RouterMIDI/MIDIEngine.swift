@@ -36,7 +36,7 @@ public final class MIDIEngine: @unchecked Sendable {
     private static let callbackGate = NSLock()
     public static let virtualInputID = "virtual:input"
     public static let virtualOutputID = "virtual:output"
-    private let queue = DispatchQueue(label: "la.lex.midi-router.routing", qos: .userInteractive)
+    private let queue = DispatchQueue(label: "dev.lexfrei.midi-router.routing", qos: .userInteractive)
     private let queueKey = DispatchSpecificKey<UInt8>()
     private let signal: DispatchSourceUserDataAdd
     private let inbox: MIDIInbox

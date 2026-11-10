@@ -4,6 +4,11 @@ import XCTest
 @testable import RouterCore
 
 final class SessionStoreTests: XCTestCase {
+    func testStandardSessionLocationIsIndependentOfBundleIdentifier() {
+        let support = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        XCTAssertEqual(SessionStore.standard.url, support.appendingPathComponent("MIDI Router/session.json"))
+    }
+
     func testRoundTripAndFailedLoadPreservesBytes() throws {
         let folder = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: folder) }
