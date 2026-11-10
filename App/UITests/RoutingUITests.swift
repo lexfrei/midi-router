@@ -151,6 +151,39 @@ final class RoutingUITests: XCTestCase {
     }
 
     @MainActor
+    func testConnectionHintTracksRoutesAndSourceCanCancel() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing", "--demo"]
+        app.launch()
+        defer { app.terminate() }
+        let source = app.buttons["connector-demo:input-main"]
+        let destination = app.buttons["connector-demo:output-main"]
+        XCTAssertTrue(source.waitForExistence(timeout: 10))
+        let frame = source.frame
+        source.click()
+        XCTAssertFalse(app.buttons["Cancel"].exists)
+        XCTAssertEqual(source.frame, frame)
+        source.click()
+        app.buttons["connector-demo:layer-main"].click()
+        XCTAssertTrue(app.buttons["create-route"].waitForExistence(timeout: 5))
+        app.buttons["inspector-close"].click()
+        app.buttons["room-picker"].click()
+        app.buttons["Terminal"].click()
+        let routes = app.buttons.matching(identifier: "Remove route")
+        XCTAssertEqual(routes.count, 1)
+        routes.firstMatch.click()
+        app.buttons["room-picker"].click()
+        app.buttons["Studio"].click()
+        source.click()
+        XCTAssertTrue(app.buttons["Cancel"].waitForExistence(timeout: 5))
+        destination.click()
+        XCTAssertFalse(app.buttons["Cancel"].exists)
+        source.click()
+        XCTAssertFalse(app.buttons["Cancel"].exists)
+        source.click()
+    }
+
+    @MainActor
     func testMenuAndPatchbayOmitPerimeterFocusRings() throws {
         guard requireEventPermission() else { return }
         let app = XCUIApplication()
