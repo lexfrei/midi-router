@@ -29,7 +29,9 @@ The monitor keeps bounded transfer warnings separate from fatal engine faults. C
 
 The package suite, including CoreMIDI integration and hidden-window rendering, has passed on Apple Silicon and Intel. Hidden-window rendering checks do not establish native OS pointer/keyboard delivery or VoiceOver behavior. `make ui-smoke` checks accessible controls and appearances; `make ui-test` requires an authorized, isolated desktop session.
 
-Physical MIDI 2.0 hardware, Bluetooth pairing, packaged-application interaction on Intel, native OS input delivery and VoiceOver interaction remain unverified.
+The UI smoke suite has passed in light and dark appearances, covering connector clicks, menu navigation, preset creation and connection cancellation. It does not exercise drag-and-drop or keyboard input.
+
+Physical MIDI 2.0 hardware, Bluetooth pairing, packaged-application interaction on Intel, full drag and keyboard workflows, and VoiceOver interaction remain unverified.
 
 ## Specifications
 

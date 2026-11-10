@@ -16,7 +16,7 @@ Use USB MIDI devices, Bluetooth MIDI connections and virtual ports for music app
 
 Click a cable to change its channel or transpose notes. **AUTO** keeps the original channel. **Port Slots** give individual channels their own connectors, so you can send different parts of a performance to different instruments. Editors open beside the connection without moving the rest of the setup.
 
-![Device settings for an NTS-3, with local naming, visibility and channel slots](docs/images/devices.png)
+![Device settings for an EP-133, with local naming, visibility and channel slots](docs/images/devices.png)
 
 ## Keep a setup for every session
 
