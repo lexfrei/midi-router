@@ -13,6 +13,8 @@ final class AppState: ObservableObject {
         case monitor = "Monitor"
         case presets = "Presets"
         case devices = "Devices"
+
+        static let primary: [Page] = [.routes, .presets, .devices]
     }
     enum Inspector: Hashable {
         case route(UUID)
@@ -54,7 +56,7 @@ final class AppState: ObservableObject {
     @Published var showOfflineDevices = false
     @Published private(set) var visiblePortIDs: Set<String> = []
     private var deviceVisibility = DeviceVisibility()
-    @Published var monitorPaused = false
+    @Published var monitorPaused = true
     @Published var monitorFilter = ""
     @Published private(set) var selectedRoute: UUID?
     @Published private(set) var undoRevision = 0
@@ -383,7 +385,9 @@ final class AppState: ObservableObject {
     }
     @discardableResult func savePreset(name: String, program: Int?) -> UUID? {
         let preset = Preset(name: name, program: program, setup: session.setup)
-        return edit("Save Preset", { $0.presets.append(preset) }) ? preset.id : nil
+        guard edit("Save Preset", { $0.presets.append(preset) }) else { return nil }
+        if inspector == .newPreset { closeInspector() }
+        return preset.id
     }
     @discardableResult func updatePreset(_ preset: Preset) -> Bool {
         edit("Edit Preset") { session in

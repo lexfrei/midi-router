@@ -43,9 +43,12 @@ struct MonitorView: View {
             .overlay {
                 if state.records.isEmpty {
                     ContentUnavailableView(
-                        "No MIDI Messages", systemImage: "waveform",
+                        state.monitorPaused ? "Monitor Paused" : "No MIDI Messages",
+                        systemImage: state.monitorPaused ? "pause.circle" : "waveform",
                         description: Text(
-                            "Play a connected device, send MIDI from a DAW, or enable Demo Mode. Pausing this display never pauses routing."
+                            state.monitorPaused
+                                ? "Turn off Pause Display to see incoming MIDI messages. Routing continues while the display is paused."
+                                : "Play a connected device, send MIDI from a DAW, or enable Demo Mode."
                         ))
                 }
             }

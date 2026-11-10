@@ -373,10 +373,10 @@ private struct NewPresetInspector: View {
     @State private var program: Int?
     var body: some View {
         Button("Create Preset") {
-            if let id = state.savePreset(name: name.trimmingCharacters(in: .whitespacesAndNewlines), program: program) {
-                state.inspectPreset(id, origin: state.inspectorOrigin)
-            }
-        }.disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+            state.savePreset(name: name.trimmingCharacters(in: .whitespacesAndNewlines), program: program)
+        }
+        .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+        .accessibilityIdentifier("create-preset")
         InspectorField(title: "Name") {
             TextField("Preset Name", text: $name).labelsHidden().textFieldStyle(.roundedBorder)
         }

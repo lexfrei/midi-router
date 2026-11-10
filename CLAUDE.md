@@ -17,7 +17,7 @@ Swift 6, macOS 14+, Xcode and XcodeGen are required. The routing libraries use o
 
 - `RouterCore` owns validated MIDI messages, protocol-aware routing, note ownership, sessions and persistence. Keep it independent of CoreMIDI and presentation.
 - `RouterMIDI` owns real CoreMIDI endpoints, protocol selection at ports, hotplug and bounded serial event processing. UI and monitor work must not block MIDI callbacks. Monitor truncation must not drop routed events; input overflow suspends the source and releases owned notes rather than silently losing note-offs.
-- `App/Sources` owns SwiftUI/AppKit presentation and application state. Studio, Terminal, Desktop and Glass are presentations of the same engine, not separate routing implementations.
+- `App/Sources` owns SwiftUI/AppKit presentation and application state. Studio, Route List, Desktop and Glass are presentations of the same engine, not separate routing implementations.
 - Preserve full UMP packets and MIDI 2.0 note/control precision and payloads through native protocol-2 ports. CoreMIDI may upgrade legacy inputs; downconversion belongs only at legacy destinations. MIDI 2.0 transport does not imply a complete MIDI-CI responder or Profiles implementation.
 - Route changes, preset recall, All Notes Off and shutdown release owned notes and sustain and clear owned MIDI 2.0 per-note controller state. Track output ownership so one source cannot reset another source's active state. Do not reset unrelated hardware.
 - Session writes are atomic. Preserve unreadable sessions and keep automatic saving disabled until the user selects a recovery file with Save As.

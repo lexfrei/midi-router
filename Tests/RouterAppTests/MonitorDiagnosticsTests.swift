@@ -12,6 +12,35 @@ final class MonitorDiagnosticsTests: XCTestCase {
             droppedMonitorRecords: 0, fault: nil, activePreset: nil, activity: [:], diagnostics: diagnostics)
     }
 
+    func testMonitorStartsPausedAndRecordsOnlyAfterResume() {
+        let state = AppState(initial: Session(), startEngine: false, persist: false)
+        let first = MonitorRecord(id: 1, source: "in", destination: "out", message: .noteOn(60))
+        let second = MonitorRecord(id: 2, source: "in", destination: "out", message: .noteOff(60))
+        XCTAssertTrue(state.monitorPaused)
+        state.updateFromSnapshot(snapshot(["Input: transfer interrupted."], records: [first]))
+        XCTAssertTrue(state.records.isEmpty)
+        XCTAssertEqual(state.totalMessages, 1)
+        XCTAssertEqual(state.routingDiagnostics, ["Input: transfer interrupted."])
+        state.monitorPaused = false
+        state.updateFromSnapshot(snapshot([], records: [second]))
+        XCTAssertEqual(state.records.map(\.id), [2])
+        state.monitorPaused = true
+        state.updateFromSnapshot(snapshot([], records: [first]))
+        XCTAssertEqual(state.records.map(\.id), [2])
+    }
+
+    func testResumedMonitorHistoryRemainsBounded() {
+        let state = AppState(initial: Session(), startEngine: false, persist: false)
+        state.monitorPaused = false
+        let records = (0..<2050).map {
+            MonitorRecord(id: UInt64($0), source: "in", destination: "out", message: .noteOn(60))
+        }
+        state.updateFromSnapshot(snapshot([], records: records))
+        XCTAssertEqual(state.records.count, 2000)
+        XCTAssertEqual(state.records.first?.id, 50)
+        XCTAssertEqual(state.records.last?.id, 2049)
+    }
+
     func testTransferWarningsRemainVisibleWhenEventDisplayIsPaused() {
         let state = AppState(initial: Session(), startEngine: false, persist: false)
         state.monitorPaused = true
@@ -33,6 +62,7 @@ final class MonitorDiagnosticsTests: XCTestCase {
 
     func testMonitorExportKeepsWarningsDistinctFromMidiPackets() {
         let state = AppState(initial: Session(), startEngine: false, persist: false)
+        state.monitorPaused = false
         let record = MonitorRecord(id: 1, source: "in", destination: "out", message: .noteOn(60))
         state.updateFromSnapshot(snapshot(["Input: transfer interrupted."], records: [record]))
         let lines = state.monitorText.split(separator: "\n").map(String.init)

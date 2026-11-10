@@ -30,7 +30,7 @@ targets:
       base:
         PRODUCT_NAME: MIDI Router
         PRODUCT_MODULE_NAME: MIDIRouterApp
-        PRODUCT_BUNDLE_IDENTIFIER: la.lex.midi-router
+        PRODUCT_BUNDLE_IDENTIFIER: dev.lexfrei.midi-router
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.music
         INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription: MIDI Router uses the system Bluetooth MIDI window to connect devices you choose.
@@ -49,7 +49,7 @@ targets:
       - App/UITests
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: la.lex.midi-router.uitests
+        PRODUCT_BUNDLE_IDENTIFIER: dev.lexfrei.midi-router.uitests
         GENERATE_INFOPLIST_FILE: YES
         TEST_TARGET_NAME: MIDIRouter
         # Ad-hoc XCTest runners need to load a test bundle without a Team ID.

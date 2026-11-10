@@ -312,13 +312,15 @@ struct Patchbay: View {
                     alignment: .topLeading
                 )
                 .popupAnchor("patchbay-content")
+                .focusEffectDisabled(false)
             }
             .focusable(interactions: .edit)
+            .focusEffectDisabled()
             .focused($canvasFocused)
             .onDeleteCommand(perform: state.deleteSelectedRoute)
             .accessibilityLabel("MIDI Patchbay")
             .safeAreaInset(edge: .top) {
-                if connecting != nil || state.session.room == .glass {
+                if state.session.setup.routes.isEmpty && (connecting != nil || state.session.room == .glass) {
                     HStack {
                         Text(
                             connecting == nil
@@ -421,7 +423,7 @@ struct Patchbay: View {
         let handle = ConnectionHandle(port: port.id, slot: slot)
         return Button {
             if port.direction == .input {
-                connecting = handle
+                connecting = connecting == handle ? nil : handle
             } else if let source = connecting, state.connect(source, to: port, slot: slot) {
                 connecting = nil
             } else {
@@ -437,6 +439,8 @@ struct Patchbay: View {
             .frame(height: height).contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .background(Color.accentColor.opacity(connecting == handle ? 0.1 : 0))
+        .accessibilityAddTraits(connecting == handle ? .isSelected : [])
         .overlay(alignment: port.direction == .input ? .trailing : .leading) {
             Circle().fill(Color(nsColor: .controlBackgroundColor))
                 .overlay(Circle().strokeBorder(.primary.opacity(0.7), lineWidth: 1.5))

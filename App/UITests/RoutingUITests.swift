@@ -1,3 +1,4 @@
+import AppKit
 import ApplicationServices
 import XCTest
 
@@ -8,11 +9,12 @@ final class RoutingUITests: XCTestCase {
             let app = XCUIApplication()
             app.launchArguments = ["--ui-testing", "--demo", appearance]
             app.launch()
+            defer { app.terminate() }
             let source = app.buttons["connector-demo:input-main"]
             XCTAssertTrue(source.waitForExistence(timeout: 10))
             source.click()
             app.buttons["connector-demo:layer-main"].click()
-            for room in ["Studio", "Desktop", "Glass", "Terminal"] {
+            for room in ["Studio", "Desktop", "Glass", "Route List"] {
                 app.buttons["room-picker"].click()
                 app.buttons[room].click()
                 let shot = XCTAttachment(screenshot: app.windows["main"].screenshot())
@@ -25,8 +27,17 @@ final class RoutingUITests: XCTestCase {
             XCTAssertTrue(app.staticTexts["Demo Keys"].exists)
             app.buttons["page-presets"].click()
             XCTAssertTrue(app.staticTexts["Demo Octave"].exists)
-            app.buttons["page-monitor"].click()
+            app.buttons["[ + Save Current Setup ]"].click()
+            XCTAssertTrue(app.buttons["create-preset"].waitForExistence(timeout: 5))
+            app.buttons["create-preset"].click()
+            XCTAssertTrue(app.staticTexts["New Setup"].waitForExistence(timeout: 5))
+            XCTAssertFalse(app.buttons["inspector-close"].exists)
+            XCTAssertFalse(app.buttons["page-monitor"].exists)
+            app.activate()
+            app.menuBars.menuBarItems["View"].click()
+            app.menuItems["MIDI Monitor"].click()
             XCTAssertTrue(app.textFields["monitor-filter"].waitForExistence(timeout: 5))
+            XCTAssertTrue(app.staticTexts["Monitor Paused"].exists)
             app.buttons["panic"].click()
             app.terminate()
         }
@@ -44,7 +55,7 @@ final class RoutingUITests: XCTestCase {
         XCTAssertTrue(target.exists)
         source.press(forDuration: 0.2, thenDragTo: target)
         app.buttons["room-picker"].click()
-        app.buttons["Terminal"].click()
+        app.buttons["Route List"].click()
         XCTAssertEqual(app.buttons.matching(identifier: "Remove route").count, 2)
         XCTAssertTrue(app.staticTexts["Demo Keys  >  Demo Synth"].exists)
         XCTAssertTrue(app.staticTexts["Demo Keys  >  Demo Layer"].exists)
@@ -64,7 +75,7 @@ final class RoutingUITests: XCTestCase {
         app.buttons["create-route"].click()
         app.buttons["inspector-close"].click()
         app.buttons["room-picker"].click()
-        app.buttons["Terminal"].click()
+        app.buttons["Route List"].click()
         app.buttons["[ Edit ]"].firstMatch.click()
         let transpose = app.textFields["Transpose in semitones"]
         XCTAssertTrue(transpose.waitForExistence(timeout: 5))
@@ -134,7 +145,7 @@ final class RoutingUITests: XCTestCase {
         window.typeKey(.downArrow, modifierFlags: [])
         window.typeKey(.return, modifierFlags: [])
         XCTAssertFalse(popup.exists)
-        XCTAssertEqual(app.buttons["room-picker"].value as? String, "Terminal")
+        XCTAssertEqual(app.buttons["room-picker"].value as? String, "Route List")
         XCTAssertTrue(app.buttons["inspector-close"].exists)
         app.buttons["route-channel"].click()
         XCTAssertTrue(popup.waitForExistence(timeout: 5))
@@ -147,6 +158,108 @@ final class RoutingUITests: XCTestCase {
         window.typeKey(.return, modifierFlags: [])
         XCTAssertEqual(app.buttons["route-channel"].value as? String, "Channel 1")
         app.terminate()
+    }
+
+    @MainActor
+    func testConnectionHintTracksRoutesAndSourceCanCancel() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing", "--demo"]
+        app.launch()
+        defer { app.terminate() }
+        let source = app.buttons["connector-demo:input-main"]
+        let destination = app.buttons["connector-demo:output-main"]
+        XCTAssertTrue(source.waitForExistence(timeout: 10))
+        app.activate()
+        XCTAssertEqual(app.state, .runningForeground)
+        XCTAssertTrue(source.isHittable)
+        let ready = XCTAttachment(screenshot: app.windows["main"].screenshot())
+        ready.name = "connection-before-selection"
+        ready.lifetime = .keepAlways
+        add(ready)
+        let frame = source.frame
+        source.click()
+        XCTAssertFalse(app.buttons["Cancel"].exists)
+        XCTAssertEqual(source.frame, frame)
+        source.click()
+        app.buttons["connector-demo:layer-main"].click()
+        XCTAssertTrue(app.buttons["create-route"].waitForExistence(timeout: 5))
+        app.buttons["inspector-close"].click()
+        app.buttons["room-picker"].click()
+        app.buttons["Route List"].click()
+        let routes = app.buttons.matching(identifier: "Remove route")
+        XCTAssertEqual(routes.count, 1)
+        routes.firstMatch.click()
+        app.buttons["room-picker"].click()
+        app.buttons["Studio"].click()
+        source.click()
+        XCTAssertTrue(app.buttons["Cancel"].waitForExistence(timeout: 5))
+        destination.click()
+        XCTAssertFalse(app.buttons["Cancel"].exists)
+        source.click()
+        XCTAssertFalse(app.buttons["Cancel"].exists)
+        source.click()
+    }
+
+    @MainActor
+    func testMenuAndPatchbayOmitPerimeterFocusRings() throws {
+        guard requireEventPermission() else { return }
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing", "--demo"]
+        app.launch()
+        defer { app.terminate() }
+        let source = app.buttons["connector-demo:input-main"]
+        let destination = app.buttons["connector-demo:output-main"]
+        XCTAssertTrue(source.waitForExistence(timeout: 10))
+        let window = app.windows["main"]
+        app.buttons["room-picker"].click()
+        let popup = app.descendants(matching: .any).matching(identifier: "popup-menu").firstMatch
+        XCTAssertTrue(popup.waitForExistence(timeout: 5))
+        XCTAssertFalse(try hasFocusRingAbove(popup.frame, in: window))
+        window.typeKey(.downArrow, modifierFlags: [])
+        window.typeKey(.return, modifierFlags: [])
+        XCTAssertEqual(app.buttons["room-picker"].value as? String, "Route List")
+        app.buttons["room-picker"].click()
+        window.typeKey(.upArrow, modifierFlags: [])
+        window.typeKey(.return, modifierFlags: [])
+        XCTAssertEqual(app.buttons["room-picker"].value as? String, "Studio")
+        let point = CGVector(
+            dx: source.frame.maxX + (destination.frame.minX - source.frame.maxX) * 0.25 - window.frame.minX,
+            dy: source.frame.midY - window.frame.minY)
+        window.coordinate(withNormalizedOffset: .zero).withOffset(point).click()
+        XCTAssertTrue(app.buttons["inspector-close"].waitForExistence(timeout: 5))
+        let patchbay = app.scrollViews["MIDI Patchbay"]
+        XCTAssertTrue(patchbay.exists)
+        XCTAssertFalse(try hasFocusRingAbove(patchbay.frame, in: window))
+        window.typeKey(.delete, modifierFlags: [])
+        XCTAssertEqual(app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "route-label-")).count, 0)
+    }
+
+    @MainActor
+    private func hasFocusRingAbove(_ frame: CGRect, in window: XCUIElement) throws -> Bool {
+        let bitmap = try XCTUnwrap(NSBitmapImageRep(data: window.screenshot().pngRepresentation))
+        let focus = try XCTUnwrap(NSColor.keyboardFocusIndicatorColor.usingColorSpace(.sRGB))
+        let scale = CGFloat(bitmap.pixelsWide) / window.frame.width
+        let left = frame.minX - window.frame.minX + 8
+        let width = frame.width - 16
+        let top = frame.minY - window.frame.minY
+        XCTAssertGreaterThan(width, 0)
+        for offset in -6...6 {
+            let y = Int((top + CGFloat(offset)) * scale)
+            guard (0..<bitmap.pixelsHigh).contains(y) else { continue }
+            var matches = 0
+            for sample in 0..<100 {
+                let x = Int((left + width * CGFloat(sample) / 100) * scale)
+                guard (0..<bitmap.pixelsWide).contains(x),
+                    let color = bitmap.colorAt(x: x, y: y)?.usingColorSpace(.sRGB)
+                else { continue }
+                let hue = abs(color.hueComponent - focus.hueComponent)
+                if min(hue, 1 - hue) < 0.06 && color.saturationComponent > 0.2 {
+                    matches += 1
+                }
+            }
+            if matches > 80 { return true }
+        }
+        return false
     }
 
     private func requireEventPermission(file: StaticString = #filePath, line: UInt = #line) -> Bool {

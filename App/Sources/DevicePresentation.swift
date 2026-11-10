@@ -2,6 +2,10 @@ import Darwin
 import Foundation
 import RouterCore
 
+extension Room {
+    var displayName: String { self == .terminal ? "Route List" : rawValue.capitalized }
+}
+
 struct DeviceVisibility {
     private var offlineSince: [String: ContinuousClock.Instant] = [:]
     private var previouslyOnline: Set<String> = []
