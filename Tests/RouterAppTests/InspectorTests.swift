@@ -61,6 +61,36 @@ final class InspectorTests: XCTestCase {
         XCTAssertEqual(state.session, before)
     }
 
+    func testCreatingPresetClosesCreationEditorWithoutChangingPage() throws {
+        let state = makeState()
+        state.page = .presets
+        state.beginNewPreset()
+        let id = try XCTUnwrap(state.savePreset(name: "Stage", program: nil))
+        XCTAssertNil(state.inspector)
+        XCTAssertEqual(state.page, .presets)
+        XCTAssertEqual(state.session.presets.last?.id, id)
+        XCTAssertEqual(state.session.presets.last?.setup, state.session.setup)
+        state.undo()
+        XCTAssertFalse(state.session.presets.contains { $0.id == id })
+    }
+
+    func testRejectedPresetCreationKeepsEditorOpen() {
+        let state = makeState()
+        state.beginNewPreset()
+        let before = state.session
+        XCTAssertNil(state.savePreset(name: "", program: nil))
+        XCTAssertEqual(state.inspector, .newPreset)
+        XCTAssertEqual(state.session, before)
+        XCTAssertNotNil(state.error)
+    }
+
+    func testSavingPresetDoesNotDismissAnUnrelatedInspector() {
+        let state = makeState()
+        state.inspectPort("in")
+        XCTAssertNotNil(state.savePreset(name: "Stage", program: nil))
+        XCTAssertEqual(state.inspector, .port("in"))
+    }
+
     func testLiveRouteFieldsPreserveOtherChangesAndUndo() throws {
         let state = makeState()
         let id = try XCTUnwrap(state.session.setup.routes.first?.id)

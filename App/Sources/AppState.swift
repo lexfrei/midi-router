@@ -383,7 +383,9 @@ final class AppState: ObservableObject {
     }
     @discardableResult func savePreset(name: String, program: Int?) -> UUID? {
         let preset = Preset(name: name, program: program, setup: session.setup)
-        return edit("Save Preset", { $0.presets.append(preset) }) ? preset.id : nil
+        guard edit("Save Preset", { $0.presets.append(preset) }) else { return nil }
+        if inspector == .newPreset { closeInspector() }
+        return preset.id
     }
     @discardableResult func updatePreset(_ preset: Preset) -> Bool {
         edit("Edit Preset") { session in

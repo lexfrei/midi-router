@@ -28,7 +28,7 @@ For Bluetooth devices, choose **Bluetooth MIDI** to open macOS's pairing window.
 
 ## Save and recall a setup
 
-On **Presets**, choose **Save Current Setup**. A preset includes routes, port slots, device aliases, visibility and layout. Recall it from the preset list or the preset selector.
+On **Presets**, choose **Save Current Setup**. A preset includes routes, port slots, device aliases, visibility and layout. Its creation panel closes after a successful save. Recall it from the preset list or the preset selector.
 
 To switch from a controller, assign a Program Change value from 0–127 and enable that input under **Program Change Sources**. Some controllers display the same values as 1–128. Program assignments must be unique. A matching, allowed message recalls the preset and is consumed; unmatched or disallowed messages continue through the routes.
 
