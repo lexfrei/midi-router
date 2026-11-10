@@ -27,7 +27,9 @@ The monitor keeps bounded transfer warnings separate from fatal engine faults. C
 
 `make check` runs formatting checks and package tests covering protocol validation, raw-word preservation, multipart ownership and interruption, note lifecycle, persistence, application state and hidden-window rendering. CoreMIDI integration tests use private virtual endpoints and an explicit inventory, never physical destinations. `make race-check` runs package tests with Thread Sanitizer.
 
-Hidden-window rendering checks do not establish native OS pointer/keyboard delivery or VoiceOver behavior. `make ui-smoke` checks accessible controls and appearances; `make ui-test` requires an authorized, isolated desktop session. Physical MIDI 2.0 hardware, Bluetooth pairing, Intel runtime behavior, native OS input delivery and VoiceOver interaction remain unverified.
+The package suite, including CoreMIDI integration and hidden-window rendering, has passed on Apple Silicon and Intel. Hidden-window rendering checks do not establish native OS pointer/keyboard delivery or VoiceOver behavior. `make ui-smoke` checks accessible controls and appearances; `make ui-test` requires an authorized, isolated desktop session.
+
+Physical MIDI 2.0 hardware, Bluetooth pairing, packaged-application interaction on Intel, native OS input delivery and VoiceOver interaction remain unverified.
 
 ## Specifications
 
