@@ -54,7 +54,7 @@ final class AppState: ObservableObject {
     @Published var showOfflineDevices = false
     @Published private(set) var visiblePortIDs: Set<String> = []
     private var deviceVisibility = DeviceVisibility()
-    @Published var monitorPaused = false
+    @Published var monitorPaused = true
     @Published var monitorFilter = ""
     @Published private(set) var selectedRoute: UUID?
     @Published private(set) var undoRevision = 0
