@@ -3,15 +3,16 @@ import RouterCore
 import SwiftUI
 
 struct PatchLayout {
+    private static let baseNodeWidth = 224.0
     var frames: [String: CGRect] = [:]
     var size: CGSize
     let scale: Double
-    var nodeWidth: Double { 224 * scale }
+    var nodeWidth: Double { Self.baseNodeWidth * scale }
     var rowHeight: Double { 30 * scale }
     var headerHeight: Double { 40 * scale }
     init(ports: [RouterPort], room: Room, width: Double, scale: Double) {
         self.scale = scale
-        let width = max(width, 640 * scale)
+        let width = max(width, (2 * Self.baseNodeWidth + 48) * scale + 48)
         size = CGSize(width: width, height: 400)
         var nextY: [Direction: Double] = [.input: 24, .output: 24]
         for port in ports where !port.hidden {
@@ -172,12 +173,14 @@ struct Patchbay: View {
     @State private var interactionPorts: [RouterPort]?
     @State private var connecting: ConnectionHandle?
     @State private var wireDrag: (source: ConnectionHandle, cursor: CGPoint)?
+    @State private var viewport: CGSize?
 
     var body: some View {
         GeometryReader { geometry in
+            let available = viewport ?? geometry.size
             let ports = interactionPorts ?? state.visiblePorts
             let layout = PatchLayout(
-                ports: ports, room: state.session.room, width: geometry.size.width,
+                ports: ports, room: state.session.room, width: available.width,
                 scale: state.session.textScale)
             let labels = state.session.setup.routes.compactMap { route -> CableLabel? in
                 guard let points = endpoints(route, layout: layout) else { return nil }
@@ -191,7 +194,7 @@ struct Patchbay: View {
             let placements = CableLabelLayout.place(labels, obstacles: obstacles)
             let contentWidth = max(layout.size.width, (placements.values.map { $0.frame.maxX }.max() ?? 0) + 16)
             let contentHeight = max(
-                geometry.size.height, layout.size.height,
+                available.height, layout.size.height,
                 (placements.values.map { $0.frame.maxY }.max() ?? 0) + 16)
             ScrollView([.horizontal, .vertical]) {
                 ZStack(alignment: .topLeading) {
@@ -311,6 +314,9 @@ struct Patchbay: View {
                     width: contentWidth, height: contentHeight,
                     alignment: .topLeading
                 )
+                .background {
+                    ScrollViewportReader { self.viewport = $0 }.accessibilityHidden(true)
+                }
                 .popupAnchor("patchbay-content")
                 .focusEffectDisabled(false)
             }

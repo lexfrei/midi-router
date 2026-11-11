@@ -30,16 +30,30 @@ struct MonitorView: View {
             }.lineLimit(1).font(.callout).foregroundStyle(RouterStyle.secondaryText).padding(.horizontal, 12).padding(
                 .bottom, 8)
             Table(state.filteredRecords) {
-                TableColumn("Source") { Text(state.portTitle($0.source)) }.width(min: 100, ideal: 160)
-                TableColumn("Destination") { Text($0.destination.map(state.portTitle) ?? "[ Input ]") }
-                    .width(min: 90, ideal: 150)
+                TableColumn("Source") { record in
+                    let text = state.portTitle(record.source)
+                    Text(text).help(text)
+                }.width(min: 60, ideal: 60, max: .infinity)
+                TableColumn("Destination") { record in
+                    let text = record.destination.map(state.portTitle) ?? "[ Input ]"
+                    Text(text).help(text)
+                }.width(min: 60, ideal: 60, max: .infinity)
                 TableColumn("GRP") { Text($0.message.groupNumber.map(String.init) ?? "—") }.width(40)
                 TableColumn("CH") { Text($0.message.channel.map(String.init) ?? "—") }.width(40)
-                TableColumn("Message") { Text($0.message.summary) }.width(min: 160, ideal: 220)
-                TableColumn("UMP") { Text($0.message.umpHex) }.width(min: 100, ideal: 220)
-                TableColumn("Host Timestamp") { Text(String($0.message.timestamp)) }.width(
-                    min: 130, ideal: 170)
+                TableColumn("Message") { record in
+                    let text = record.message.summary
+                    Text(text).help(text)
+                }.width(min: 80, ideal: 80, max: .infinity)
+                TableColumn("UMP") { record in
+                    let text = record.message.umpHex
+                    Text(text).help(text)
+                }.width(min: 80, ideal: 80, max: .infinity)
+                TableColumn("Host Timestamp") { record in
+                    let text = String(record.message.timestamp)
+                    Text(text).help(text)
+                }.width(min: 80, ideal: 80, max: .infinity)
             }
+            .lineLimit(1)
             .overlay {
                 if state.records.isEmpty {
                     ContentUnavailableView(
