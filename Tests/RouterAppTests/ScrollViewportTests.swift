@@ -129,6 +129,31 @@ final class ScrollViewportTests: XCTestCase {
         }
     }
 
+    func testHorizontalScrollerTracksDesktopOverflow() throws {
+        for style in [NSScroller.Style.legacy, .overlay] {
+            let state = makeState(room: .desktop)
+            let (window, host, scroll) = try makeWindow(state: state, width: 1100, style: style)
+            defer { window.close() }
+            assertFits(scroll, context: "desktop content fits viewport")
+            state.positionPort("out-0", at: CGPoint(x: 1500, y: 24))
+            settle(host)
+            let document = try XCTUnwrap(scroll.documentView)
+            XCTAssertGreaterThan(document.frame.width, scroll.contentView.bounds.width)
+            if style == .legacy {
+                XCTAssertFalse(try XCTUnwrap(scroll.horizontalScroller).visibleRect.isEmpty)
+            }
+            scroll.contentView.scroll(to: CGPoint(x: document.frame.width - scroll.contentView.bounds.width, y: 0))
+            scroll.reflectScrolledClipView(scroll.contentView)
+            settle(host)
+            let output = try XCTUnwrap(state.popupAnchors["connector-out-0-main"])
+            XCTAssertGreaterThanOrEqual(output.minX, 0)
+            XCTAssertLessThanOrEqual(output.maxX, host.bounds.maxX)
+            state.positionPort("out-0", at: CGPoint(x: 800, y: 24))
+            settle(host)
+            assertFits(scroll, context: "desktop content returned to viewport")
+        }
+    }
+
     func testClippedScrollerDoesNotCountAsVisible() throws {
         _ = NSApplication.shared
         let scroll = NSScrollView(frame: CGRect(x: 0, y: 0, width: 400, height: 300))
@@ -175,6 +200,9 @@ final class ScrollViewportTests: XCTestCase {
         scroll.scrollerStyle = style
         scroll.tile()
         settle(host)
+        XCTAssertEqual(host.bounds.width, width)
+        XCTAssertGreaterThanOrEqual(scroll.convert(scroll.bounds, to: host).minX, 0)
+        XCTAssertLessThanOrEqual(scroll.convert(scroll.bounds, to: host).maxX, host.bounds.maxX)
         return (window, host, scroll)
     }
 

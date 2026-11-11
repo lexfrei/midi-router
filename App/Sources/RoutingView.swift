@@ -320,6 +320,7 @@ struct Patchbay: View {
                 .popupAnchor("patchbay-content")
                 .focusEffectDisabled(false)
             }
+            .scrollIndicators(contentWidth > available.width ? .automatic : .hidden, axes: .horizontal)
             .focusable(interactions: .edit)
             .focusEffectDisabled()
             .focused($canvasFocused)
