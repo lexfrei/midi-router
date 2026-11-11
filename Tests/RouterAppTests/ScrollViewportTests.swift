@@ -129,6 +129,22 @@ final class ScrollViewportTests: XCTestCase {
         }
     }
 
+    func testClippedScrollerDoesNotCountAsVisible() throws {
+        _ = NSApplication.shared
+        let scroll = NSScrollView(frame: CGRect(x: 0, y: 0, width: 400, height: 300))
+        scroll.scrollerStyle = .legacy
+        scroll.clipsToBounds = true
+        scroll.hasHorizontalScroller = true
+        scroll.documentView = NSView(frame: CGRect(x: 0, y: 0, width: 400, height: 200))
+        scroll.tile()
+        let scroller = try XCTUnwrap(scroll.horizontalScroller)
+        XCTAssertFalse(scroller.visibleRect.isEmpty)
+        scroller.setFrameOrigin(CGPoint(x: 0, y: -scroller.frame.height))
+        XCTAssertFalse(scroller.isHidden)
+        XCTAssertTrue(scroller.visibleRect.isEmpty)
+        assertFits(scroll, context: "clipped horizontal scroller")
+    }
+
     private func makeState(room: Room = .studio, scale: Double = 1) -> AppState {
         let ports = (0..<8).flatMap { index in
             [
@@ -171,7 +187,12 @@ final class ScrollViewportTests: XCTestCase {
         XCTAssertLessThanOrEqual(
             document.frame.width, scroll.contentView.bounds.width + 0.5,
             context, file: file, line: line)
-        XCTAssertTrue(scroll.horizontalScroller?.isHidden ?? true, context, file: file, line: line)
+        if scroll.hasHorizontalScroller, let scroller = scroll.horizontalScroller, scroller.superview != nil {
+            XCTAssertTrue(
+                scroller.visibleRect.isEmpty,
+                "\(context) scroller=\(scroller.frame) visible=\(scroller.visibleRect) autohides=\(scroll.autohidesScrollers)",
+                file: file, line: line)
+        }
     }
 
     private func settle(_ host: NSView) {

@@ -25,8 +25,10 @@ final class ConnectionHintRenderingTests: XCTestCase {
 
         func anchor(in room: Room) throws -> CGRect {
             state.changeRoom(room)
-            host.layoutSubtreeIfNeeded()
-            RunLoop.current.run(until: Date().addingTimeInterval(0.05))
+            for _ in 0..<3 {
+                host.layoutSubtreeIfNeeded()
+                RunLoop.current.run(until: Date().addingTimeInterval(0.05))
+            }
             host.layoutSubtreeIfNeeded()
             return try XCTUnwrap(state.popupAnchors["connector-in-main"])
         }
