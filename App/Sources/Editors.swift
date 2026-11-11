@@ -1,3 +1,4 @@
+import ASCIIUI
 import RouterCore
 import SwiftUI
 
@@ -53,53 +54,6 @@ private struct InspectorField<Content: View>: View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title).foregroundStyle(RouterStyle.secondaryText)
             content.frame(maxWidth: .infinity, alignment: .leading)
-        }
-    }
-}
-
-struct CommittedTextField: View {
-    let title: String
-    let value: String
-    let identifier: String
-    var commitValue: (String) -> Bool
-    @State private var text: String
-    @State private var baseline: String
-    @State private var invalid = false
-    @FocusState private var focused: Bool
-
-    init(_ title: String, value: String, identifier: String = "", commit: @escaping (String) -> Bool) {
-        self.title = title
-        self.value = value
-        self.identifier = identifier
-        commitValue = commit
-        _text = State(initialValue: value)
-        _baseline = State(initialValue: value)
-    }
-    var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            TextField(title, text: $text)
-                .labelsHidden().textFieldStyle(.roundedBorder).focused($focused)
-                .accessibilityLabel(title).accessibilityIdentifier(identifier)
-                .onSubmit(commit)
-            if invalid { Text("Invalid value").foregroundStyle(.primary).accessibilityLabel("Invalid \(title)") }
-        }
-        .onChange(of: focused) { _, editing in if !editing { commit() } }
-        .onChange(of: value) { old, new in
-            if !focused || text == old {
-                text = new
-                invalid = false
-            }
-            baseline = new
-        }
-        .onDisappear(perform: commit)
-    }
-    private func commit() {
-        guard text != baseline else { return }
-        if commitValue(text) {
-            baseline = text
-            invalid = false
-        } else {
-            invalid = true
         }
     }
 }

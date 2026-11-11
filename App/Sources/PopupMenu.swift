@@ -120,6 +120,5 @@ struct PopupMenuLayer: View {
             activate: { state.activatePopup(index: $0) }, highlight: state.highlightPopup,
             move: state.movePopup, search: { state.searchPopup($0) }, dismiss: state.dismissPopup
         )
-        .focusEffectDisabled()
     }
 }

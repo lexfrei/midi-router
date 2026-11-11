@@ -10,7 +10,7 @@ let package = Package(
         .executable(name: "midi-router", targets: ["MIDIRouterApp"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/lexfrei/ascii-ui.git", exact: "0.1.0-rc.1")
+        .package(url: "https://github.com/lexfrei/ascii-ui.git", exact: "0.1.0")
     ],
     targets: [
         .target(name: "RouterCore"),
