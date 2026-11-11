@@ -213,14 +213,32 @@ final class ScrollViewportTests: XCTestCase {
             return
         }
         XCTAssertLessThanOrEqual(
-            document.frame.width, scroll.contentView.bounds.width + 0.5,
+            document.frame.width, scroll.contentView.bounds.width,
             context, file: file, line: line)
         if scroll.hasHorizontalScroller, let scroller = scroll.horizontalScroller, scroller.superview != nil {
             XCTAssertTrue(
                 scroller.visibleRect.isEmpty,
-                "\(context) scroller=\(scroller.frame) visible=\(scroller.visibleRect) autohides=\(scroll.autohidesScrollers)",
+                "\(context) \(scrollDescription(scroll, scroller: scroller))",
                 file: file, line: line)
         }
+    }
+
+    private func scrollDescription(_ scroll: NSScrollView, scroller: NSScroller) -> String {
+        var details = [
+            "document=\(String(describing: scroll.documentView?.frame))",
+            "overflow=\((scroll.documentView?.frame.width ?? 0) - scroll.contentView.bounds.width)",
+            "clip=\(scroll.contentView.bounds) documentRect=\(scroll.contentView.documentRect)",
+            "contentSize=\(scroll.contentSize) insets=\(scroll.contentInsets)",
+            "autohides=\(scroll.autohidesScrollers) knob=\(scroller.knobProportion)",
+        ]
+        var ancestor: NSView? = scroller
+        while let view = ancestor {
+            details.append(
+                "\(type(of: view)) frame=\(view.frame) visible=\(view.visibleRect) hidden=\(view.isHidden) alpha=\(view.alphaValue)"
+            )
+            ancestor = view.superview
+        }
+        return details.joined(separator: " ")
     }
 
     private func settle(_ host: NSView) {
