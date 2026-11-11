@@ -48,7 +48,7 @@ Dropdown menus support arrow navigation, Return, typeahead, Escape and outside-c
 
 A source displays **Receiving** when MIDI reaches the Mac, even if no route exists. This does not confirm that a destination is producing sound.
 
-Open **View > MIDI Monitor** for received and routed messages, source and destination, group, channel, timestamp and message data. MIDI 2.0 messages include their full Universal MIDI Packet words. Transfer warnings appear separately from engine faults and are included when copying the log.
+Open **View > MIDI Monitor** for received and routed messages, source and destination, group, channel, timestamp and message data. MIDI 2.0 messages include their full Universal MIDI Packet words. The columns adapt to the window width; hover over truncated values or use **Copy** to read their full content. Transfer warnings appear separately from engine faults and are included when copying the log.
 
 The monitor starts paused and does not accumulate event history until you turn off **Pause Display**. Pause, Clear and search affect only the display. The monitor keeps a bounded history without dropping routed events. If the input queue overflows, the affected input is suspended and its owned notes are released. **Resume Suspended Inputs** is available in the Routing menu.
 
