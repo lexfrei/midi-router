@@ -95,7 +95,12 @@ struct PopupMenu: View {
                 .frame(minHeight: 28, alignment: .leading).contentShape(Rectangle())
         }
         .buttonStyle(.borderless)
+        .focusable()
         .focused($focused)
+        .onKeyPress(keys: [.space, .return], phases: .down) { _ in
+            state.showPopup(source: source, label: label, items: items)
+            return .handled
+        }
         .popupAnchor(source)
         .accessibilityLabel(label).accessibilityValue(title)
         .accessibilityIdentifier(identifier)
@@ -120,6 +125,5 @@ struct PopupMenuLayer: View {
             activate: { state.activatePopup(index: $0) }, highlight: state.highlightPopup,
             move: state.movePopup, search: { state.searchPopup($0) }, dismiss: state.dismissPopup
         )
-        .focusEffectDisabled()
     }
 }

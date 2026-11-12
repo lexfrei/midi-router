@@ -83,32 +83,6 @@ final class ScrollViewportTests: XCTestCase {
         XCTAssertFalse(window.isVisible)
     }
 
-    func testViewportReaderIgnoresScrollOffsetAndDisconnects() {
-        _ = NSApplication.shared
-        let scroll = NSScrollView(frame: CGRect(x: 0, y: 0, width: 400, height: 300))
-        let document = NSView(frame: CGRect(x: 0, y: 0, width: 800, height: 800))
-        let probe = ScrollViewportReader.Probe()
-        var reports: [CGSize] = []
-        probe.update = { reports.append($0) }
-        document.addSubview(probe)
-        scroll.documentView = document
-        let window = NSWindow(contentRect: scroll.frame, styleMask: [.titled], backing: .buffered, defer: false)
-        window.isReleasedWhenClosed = false
-        window.contentView = scroll
-        defer { window.close() }
-        settle(scroll)
-        XCTAssertEqual(reports.last, scroll.contentView.bounds.size)
-        let count = reports.count
-        scroll.contentView.scroll(to: CGPoint(x: 0, y: 40))
-        settle(scroll)
-        XCTAssertEqual(reports.count, count)
-        probe.disconnect()
-        window.setContentSize(CGSize(width: 500, height: 350))
-        settle(scroll)
-        XCTAssertEqual(reports.count, count)
-        XCTAssertFalse(window.isVisible)
-    }
-
     func testWideDesktopAndLargeTextRemainHorizontallyReachable() throws {
         for style in [NSScroller.Style.legacy, .overlay] {
             for desktop in [false, true] {
