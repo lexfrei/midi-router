@@ -37,7 +37,7 @@ Do not launch a second instance alongside an active application without checking
 
 CoreMIDI tests create private virtual endpoints and supply an explicit endpoint inventory. They do not subscribe or route test traffic to physical devices. Hidden-window rendering tests check layout without activating the app; they do not establish native input delivery or VoiceOver behavior.
 
-UI tests use isolated session files and Demo Mode. Session isolation does not isolate the desktop: XCTest launches windows in the logged-in GUI session. Use a dedicated macOS session when other applications must remain untouched. Drag and keyboard tests require macOS input-automation authorization for the runner. They fail explicitly when permission is missing rather than reporting a skipped test as a pass.
+UI tests use isolated session files and Demo Mode. Session isolation does not isolate the desktop: XCTest launches windows in the logged-in GUI session. Use a dedicated macOS session when other applications must remain untouched. Native interaction tests use XCTest and assert the resulting UI state. UI targets disable parallel test workers because they share a desktop. Shortcut checks temporarily select an ASCII-capable input source and restore the previous source after each command. macOS must authorize UI automation; input failures fail the tests rather than silently skipping them.
 
 The UI-test runner disables hardened runtime because an ad-hoc runner cannot load its test bundle with library validation. This exception does not apply to the application target.
 

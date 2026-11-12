@@ -25,11 +25,11 @@ app:
 
 ui-test:
 	xcodegen generate --spec "$(ROOT)/project.yml"
-	xcodebuild -project "$(ROOT)/MIDIRouter.xcodeproj" -scheme MIDIRouter -configuration Debug -destination 'platform=macOS' -derivedDataPath "$(DERIVED)" test
+	xcodebuild -project "$(ROOT)/MIDIRouter.xcodeproj" -scheme MIDIRouter -configuration Debug -destination 'platform=macOS' -derivedDataPath "$(DERIVED)" -parallel-testing-enabled NO test
 
 ui-smoke:
 	xcodegen generate --spec "$(ROOT)/project.yml"
-	xcodebuild -project "$(ROOT)/MIDIRouter.xcodeproj" -scheme MIDIRouter -configuration Debug -destination 'platform=macOS' -derivedDataPath "$(DERIVED)" -only-testing:MIDIRouterUITests/RoutingUITests/testAccessibleRoutingAndRoomLayouts test
+	xcodebuild -project "$(ROOT)/MIDIRouter.xcodeproj" -scheme MIDIRouter -configuration Debug -destination 'platform=macOS' -derivedDataPath "$(DERIVED)" -parallel-testing-enabled NO -only-testing:MIDIRouterUITests/RoutingUITests/testAccessibleRoutingAndRoomLayouts test
 
 race-check:
 	swift test --package-path "$(ROOT)" --sanitize thread

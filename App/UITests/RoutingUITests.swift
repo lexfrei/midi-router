@@ -1,5 +1,5 @@
 import AppKit
-import ApplicationServices
+import Carbon
 import XCTest
 
 final class RoutingUITests: XCTestCase {
@@ -39,41 +39,39 @@ final class RoutingUITests: XCTestCase {
             XCTAssertTrue(app.textFields["monitor-filter"].waitForExistence(timeout: 5))
             XCTAssertTrue(app.staticTexts["Monitor Paused"].exists)
             app.buttons["panic"].click()
-            app.terminate()
         }
     }
 
     @MainActor
     func testPointToPointDragAddsFanOutWithoutReplacingRoute() throws {
-        guard requireEventPermission() else { return }
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "--demo"]
         app.launch()
+        defer { app.terminate() }
         let source = app.buttons["connector-demo:input-main"]
         let target = app.buttons["connector-demo:layer-main"]
         XCTAssertTrue(source.waitForExistence(timeout: 10))
         XCTAssertTrue(target.exists)
-        source.press(forDuration: 0.2, thenDragTo: target)
+        source.click(forDuration: 0.2, thenDragTo: target)
         app.buttons["room-picker"].click()
         app.buttons["Route List"].click()
         XCTAssertEqual(app.buttons.matching(identifier: "Remove route").count, 2)
         XCTAssertTrue(app.staticTexts["Demo Keys  >  Demo Synth"].exists)
         XCTAssertTrue(app.staticTexts["Demo Keys  >  Demo Layer"].exists)
-        app.terminate()
     }
 
     @MainActor
     func testCreateEditRemoveAndUndoRouteUsingControls() throws {
-        guard requireEventPermission() else { return }
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "--demo"]
         app.launch()
+        defer { app.terminate() }
         XCTAssertTrue(app.buttons["new-route"].waitForExistence(timeout: 10))
         app.buttons["new-route"].click()
         XCTAssertTrue(app.buttons["create-route"].waitForExistence(timeout: 5))
         XCTAssertEqual(app.sheets.count, 0)
         app.buttons["create-route"].click()
-        app.buttons["inspector-close"].click()
+        closeInspector(in: app)
         app.buttons["room-picker"].click()
         app.buttons["Route List"].click()
         app.buttons["[ Edit ]"].firstMatch.click()
@@ -81,7 +79,7 @@ final class RoutingUITests: XCTestCase {
         XCTAssertTrue(transpose.waitForExistence(timeout: 5))
         transpose.click()
         let routesBeforeTyping = app.buttons.matching(identifier: "Remove route").count
-        transpose.typeKey("a", modifierFlags: .command)
+        try typeShortcut("a", in: transpose)
         transpose.typeKey(.delete, modifierFlags: [])
         XCTAssertEqual(transpose.value as? String, "")
         XCTAssertEqual(app.buttons.matching(identifier: "Remove route").count, routesBeforeTyping)
@@ -89,23 +87,65 @@ final class RoutingUITests: XCTestCase {
         XCTAssertEqual(transpose.value as? String, "7")
         transpose.typeKey(.return, modifierFlags: [])
         XCTAssertEqual(app.sheets.count, 0)
-        app.buttons["inspector-close"].click()
+        closeInspector(in: app)
         let remove = app.buttons.matching(identifier: "Remove route")
         let count = remove.count
         XCTAssertGreaterThan(count, 0)
         remove.firstMatch.click()
-        XCTAssertEqual(remove.count, count - 1)
-        app.windows["main"].typeKey("z", modifierFlags: .command)
-        XCTAssertEqual(remove.count, count)
-        app.terminate()
+        waitForCount(remove, equals: count - 1)
+        XCTAssertEqual(app.state, .runningForeground)
+        try typeShortcut("z", in: app.windows["main"])
+        XCTAssertEqual(app.state, .runningForeground)
+        waitForCount(remove, equals: count)
+        try typeShortcut("z", modifiers: [.command, .shift], in: app.windows["main"])
+        waitForCount(remove, equals: count - 1)
+        try typeShortcut("z", in: app.windows["main"])
+        waitForCount(remove, equals: count)
+    }
+
+    @MainActor
+    func testCommittedTransposePreservesRejectedDraftWithoutSavingIt() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing", "--demo"]
+        app.launch()
+        defer { app.terminate() }
+        let route = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "route-label-")).firstMatch
+        XCTAssertTrue(route.waitForExistence(timeout: 10))
+        app.activate()
+        route.click()
+        let transpose = app.textFields["route-transpose"]
+        XCTAssertTrue(transpose.waitForExistence(timeout: 5))
+        XCTAssertEqual(transpose.label, "Transpose in semitones")
+        transpose.click()
+        try typeShortcut("a", in: transpose)
+        transpose.typeKey(.delete, modifierFlags: [])
+        XCTAssertEqual(transpose.value as? String, "")
+        transpose.typeText("7")
+        transpose.typeKey(.return, modifierFlags: [])
+        closeInspector(in: app)
+        route.click()
+        XCTAssertTrue(transpose.waitForExistence(timeout: 5))
+        XCTAssertEqual(transpose.value as? String, "7")
+        transpose.click()
+        try typeShortcut("a", in: transpose)
+        transpose.typeKey(.delete, modifierFlags: [])
+        XCTAssertEqual(transpose.value as? String, "")
+        transpose.typeText("128")
+        transpose.typeKey(.return, modifierFlags: [])
+        XCTAssertTrue(app.staticTexts["Invalid Transpose in semitones"].waitForExistence(timeout: 5))
+        XCTAssertEqual(transpose.value as? String, "128")
+        closeInspector(in: app)
+        route.click()
+        XCTAssertTrue(transpose.waitForExistence(timeout: 5))
+        XCTAssertEqual(transpose.value as? String, "7")
     }
 
     @MainActor
     func testClickingCableSelectsItAndDeleteRemovesIt() throws {
-        guard requireEventPermission() else { return }
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "--demo"]
         app.launch()
+        defer { app.terminate() }
         let source = app.buttons["connector-demo:input-main"]
         let destination = app.buttons["connector-demo:output-main"]
         XCTAssertTrue(source.waitForExistence(timeout: 10))
@@ -119,7 +159,7 @@ final class RoutingUITests: XCTestCase {
         XCTAssertTrue(app.buttons["inspector-close"].waitForExistence(timeout: 5))
         XCTAssertEqual(source.frame, sourceFrame)
         XCTAssertEqual(destination.frame, destinationFrame)
-        app.buttons["inspector-close"].click()
+        closeInspector(in: app)
         XCTAssertEqual(source.frame, sourceFrame)
         XCTAssertEqual(destination.frame, destinationFrame)
         window.coordinate(withNormalizedOffset: .zero).withOffset(point).click()
@@ -127,15 +167,14 @@ final class RoutingUITests: XCTestCase {
         XCTAssertEqual(app.sheets.count, 0)
         window.typeKey(.delete, modifierFlags: [])
         XCTAssertEqual(app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "route-label-")).count, 0)
-        app.terminate()
     }
 
     @MainActor
     func testPopupKeyboardSelectionAndEscapeKeepInspectorOpen() throws {
-        guard requireEventPermission() else { return }
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "--demo"]
         app.launch()
+        defer { app.terminate() }
         XCTAssertTrue(app.buttons["new-route"].waitForExistence(timeout: 10))
         app.buttons["new-route"].click()
         let window = app.windows["main"]
@@ -152,12 +191,11 @@ final class RoutingUITests: XCTestCase {
         window.typeKey(.escape, modifierFlags: [])
         XCTAssertFalse(popup.exists)
         XCTAssertTrue(app.buttons["inspector-close"].exists)
-        app.buttons["route-channel"].click()
+        window.typeKey(" ", modifierFlags: [])
         XCTAssertTrue(popup.waitForExistence(timeout: 5))
         window.typeKey(.downArrow, modifierFlags: [])
         window.typeKey(.return, modifierFlags: [])
         XCTAssertEqual(app.buttons["route-channel"].value as? String, "Channel 1")
-        app.terminate()
     }
 
     @MainActor
@@ -183,7 +221,7 @@ final class RoutingUITests: XCTestCase {
         source.click()
         app.buttons["connector-demo:layer-main"].click()
         XCTAssertTrue(app.buttons["create-route"].waitForExistence(timeout: 5))
-        app.buttons["inspector-close"].click()
+        closeInspector(in: app)
         app.buttons["room-picker"].click()
         app.buttons["Route List"].click()
         let routes = app.buttons.matching(identifier: "Remove route")
@@ -202,7 +240,6 @@ final class RoutingUITests: XCTestCase {
 
     @MainActor
     func testMenuAndPatchbayOmitPerimeterFocusRings() throws {
-        guard requireEventPermission() else { return }
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "--demo"]
         app.launch()
@@ -235,6 +272,39 @@ final class RoutingUITests: XCTestCase {
     }
 
     @MainActor
+    private func typeShortcut(
+        _ key: String, modifiers: XCUIElement.KeyModifierFlags = .command, in element: XCUIElement,
+        file: StaticString = #filePath, line: UInt = #line
+    ) throws {
+        let original = try XCTUnwrap(TISCopyCurrentKeyboardInputSource()?.takeRetainedValue(), file: file, line: line)
+        let ascii = try XCTUnwrap(
+            TISCopyCurrentASCIICapableKeyboardInputSource()?.takeRetainedValue(), file: file, line: line)
+        defer { XCTAssertEqual(TISSelectInputSource(original), noErr, file: file, line: line) }
+        let selected = TISSelectInputSource(ascii)
+        XCTAssertEqual(selected, noErr, file: file, line: line)
+        guard selected == noErr else { return }
+        element.typeKey(key, modifierFlags: modifiers)
+    }
+
+    @MainActor
+    private func closeInspector(in app: XCUIApplication, file: StaticString = #filePath, line: UInt = #line) {
+        let close = app.buttons["inspector-close"]
+        XCTAssertTrue(close.waitForExistence(timeout: 5), file: file, line: line)
+        close.click()
+        let closed = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == false"), object: close)
+        XCTAssertEqual(XCTWaiter.wait(for: [closed], timeout: 5), .completed, file: file, line: line)
+    }
+
+    @MainActor
+    private func waitForCount(
+        _ query: XCUIElementQuery, equals count: Int, file: StaticString = #filePath, line: UInt = #line
+    ) {
+        let matched = XCTNSPredicateExpectation(predicate: NSPredicate(format: "count == %ld", count), object: query)
+        XCTAssertEqual(XCTWaiter.wait(for: [matched], timeout: 5), .completed, file: file, line: line)
+        XCTAssertEqual(query.count, count, file: file, line: line)
+    }
+
+    @MainActor
     private func hasFocusRingAbove(_ frame: CGRect, in window: XCUIElement) throws -> Bool {
         let bitmap = try XCTUnwrap(NSBitmapImageRep(data: window.screenshot().pngRepresentation))
         let focus = try XCTUnwrap(NSColor.keyboardFocusIndicatorColor.usingColorSpace(.sRGB))
@@ -262,12 +332,4 @@ final class RoutingUITests: XCTestCase {
         return false
     }
 
-    private func requireEventPermission(file: StaticString = #filePath, line: UInt = #line) -> Bool {
-        let permitted = CGPreflightPostEventAccess()
-        XCTAssertTrue(
-            permitted,
-            "macOS has not authorized this UI-test runner to post input events. Grant Accessibility access to the runner before testing drag gestures and keyboard shortcuts.",
-            file: file, line: line)
-        return permitted
-    }
 }
