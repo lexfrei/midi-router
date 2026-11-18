@@ -9,6 +9,8 @@ Swift 6, macOS 14+, Xcode and XcodeGen are required. The routing libraries use o
 - `make test`: all package tests. Run one test with `swift test --filter RoutingTests/testLayeringDoesNotMultiplyClockOrSysEx`.
 - `make race-check`: package tests under Thread Sanitizer.
 - `make app`: build and verify an ad-hoc-signed universal arm64/x86_64 application at `.build/xcode/Build/Products/Release/MIDI Router.app`. Override the build directory with `make app DERIVED=/absolute/path`.
+- `make app-sandbox`: build an ad-hoc-signed App Sandbox variant at `.build/sandbox/Build/Products/Release/MIDI Router.app`. Its session lives in the sandbox container, separate from the unsandboxed application.
+- `make app-store TEAM_ID=… BUILD_NUMBER=…`: archive and export a signed Mac App Store package at `.build/app-store/MIDI Router.pkg`; requires the distribution identities and provisioning profile described in `docs/building.md`.
 - `make run`: run the development application; obtain permission before launching it alongside or replacing an active instance.
 - `make ui-smoke`: accessible-control and appearance smoke tests without synthetic drag or keyboard input.
 - `make ui-test`: full XCTest UI suite, including native input delivery; requires input-automation authorization and an isolated GUI session.
