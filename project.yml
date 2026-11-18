@@ -32,6 +32,9 @@ targets:
         PRODUCT_MODULE_NAME: MIDIRouterApp
         PRODUCT_BUNDLE_IDENTIFIER: dev.lexfrei.midi-router
         GENERATE_INFOPLIST_FILE: YES
+        # Empty for ad-hoc builds; `make app-sandbox` and `make app-store` pass App/MIDIRouter.entitlements.
+        CODE_SIGN_ENTITLEMENTS: $(MIDI_ROUTER_ENTITLEMENTS)
+        INFOPLIST_KEY_ITSAppUsesNonExemptEncryption: NO
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.music
         INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription: MIDI Router uses the system Bluetooth MIDI window to connect devices you choose.
         INFOPLIST_KEY_NSPrincipalClass: NSApplication

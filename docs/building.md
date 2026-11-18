@@ -22,6 +22,31 @@ make app DERIVED="$PWD/.build/release"
 
 Do not launch a second instance alongside an active application without checking its virtual-port identities and session settings.
 
+## Mac App Store builds
+
+The Mac App Store requires App Sandbox. `App/MIDIRouter.entitlements` enables the sandbox, Bluetooth for the system Bluetooth MIDI window, and read-write access to files chosen in open and save panels. Only the App Store targets apply it; `make app` and GitHub release builds stay unsandboxed, so existing sessions in `~/Library/Application Support/MIDI Router` keep working. A sandboxed build stores its session in `~/Library/Containers/dev.lexfrei.midi-router` instead.
+
+```bash
+make app-sandbox
+make app-store TEAM_ID=<team id> BUILD_NUMBER=<build number>
+```
+
+`make app-sandbox` builds an ad-hoc-signed sandboxed application at `.build/sandbox/Build/Products/Release/MIDI Router.app` for local checks. `make app-store` archives the application, signs it with the `Apple Distribution` identity and the `MIDI Router Mac App Store` provisioning profile (override with `STORE_PROFILE`), and exports `.build/app-store/MIDI Router.pkg` signed with the `3rd Party Mac Developer Installer` identity. Both identities and the profile must be installed locally.
+
+The App Store workflow runs when a GitHub release is published, or manually. It checks that the release tag matches `MARKETING_VERSION`, builds with `make app-store` using `<run number>.<run attempt>` as the build number, and uploads the package to App Store Connect. Submitting the build for review stays in App Store Connect. The workflow reads these repository secrets:
+
+| Secret | Content |
+| --- | --- |
+| `MAS_APP_CERT_P12` | Base64 of the `Apple Distribution` certificate and private key (`.p12`) |
+| `MAS_INSTALLER_CERT_P12` | Base64 of the `3rd Party Mac Developer Installer` certificate and private key (`.p12`) |
+| `MAS_CERT_PASSWORD` | Password of both `.p12` files |
+| `MAS_PROVISIONING_PROFILE` | Base64 of the `MIDI Router Mac App Store` provisioning profile |
+| `ASC_KEY_ID` | App Store Connect API key ID (App Manager role) |
+| `ASC_ISSUER_ID` | App Store Connect API issuer ID |
+| `ASC_KEY_P8` | App Store Connect API private key (`.p8` text) |
+
+Certificates and the profile expire after one year and must be renewed together with these secrets.
+
 ## Verify changes
 
 | Command | Coverage |
